@@ -24,11 +24,14 @@ def sanitize_file_name(file_name):
 if __name__ == '__main__':
     artist = input('Artist: ')
     album = input('Album: ')
-    filepath = f'{artist}/{album}'
+    do_increment = input('Increment filenames (y/n): ') == 'y'
+
+    directory = f'{artist}/{album}'
+    temp_file_path = f'{directory}/temp_name_before_sanitization.mp3'
     
     yt_dlp_options = {
         'format': 'mp3/bestaudio/best',
-        'outtmpl': f'{filepath}/temp_name_before_sanitization.%(ext)s',
+        'outtmpl': f'{directory}/temp_name_before_sanitization.%(ext)s',
         'restrict-filenames': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -38,6 +41,7 @@ if __name__ == '__main__':
     }
 
     # Get data from musicbrainz
+    print('\nFinding album on MusicBrainz...')
     mb.set_useragent('Rip and Tag', '0.1')
     results = mb.search_releases(album, artistname=artist, strict=True)
     
@@ -45,7 +49,7 @@ if __name__ == '__main__':
         print('No record of artist and album :(')
         exit(0)
 
-    os.makedirs(f'{filepath}', exist_ok=True)
+    os.makedirs(f'{directory}', exist_ok=True)
     album_id = results['release-list'][0]['id']
     mediums = mb.get_release_by_id(album_id, includes=['recordings'])['release']['medium-list']
 
@@ -58,18 +62,21 @@ if __name__ == '__main__':
                 response = search_youtube(f'{track_name} by {artist}', limit=1)
                 video = response.result()['result'][0]
                 ytdl.download(video['link'])
-                os.rename(f'{filepath}/temp_name_before_sanitization.mp3', f'{filepath}/{track_name}.mp3')
 
-                # Tag
-                file = EasyID3(f'{filepath}/{track_name}.mp3',)
+                if do_increment:
+                    prefix = f'[{medium['position']}, {str(track['position'].zfill(2))}]'
+                    file_name = f'{directory}/{prefix} {track_name}.mp3'
+                else:
+                    file_name = f'{directory}/{track_name}.mp3'
+
+                # Tag               
+                file = EasyID3(temp_file_path)
                 file['title'] = track_name
                 file['album'] = album
                 file['artist'] = artist
                 file['tracknumber'] = track['position']
                 file['discnumber'] = medium['position']
-                
-
-
                 file.save(v2_version=3)
+                os.rename(temp_file_path, file_name)
 
     print('\n\ndone')
