@@ -61,12 +61,15 @@ if __name__ == '__main__':
                 os.rename(f'{filepath}/temp_name_before_sanitization.mp3', f'{filepath}/{track_name}.mp3')
 
                 # Tag
-                file = EasyID3(f'{filepath}/{track_name}.mp3')
+                file = EasyID3(f'{filepath}/{track_name}.mp3',)
                 file['title'] = track_name
                 file['album'] = album
                 file['artist'] = artist
                 file['tracknumber'] = track['position']
                 file['discnumber'] = medium['position']
+                
 
 
-                file.save()
+                file.save(v2_version=3)
+
+    print('\n\ndone')
