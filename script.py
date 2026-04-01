@@ -58,7 +58,7 @@ if __name__ == '__main__':
                 response = search_youtube(f'{track_name} by {artist}', limit=1)
                 video = response.result()['result'][0]
                 ytdl.download(video['link'])
-                os.rename(f'./temp_name_before_sanitization.mp3', f'{filepath}/{track_name}.mp3')
+                os.rename(f'{filepath}/temp_name_before_sanitization.mp3', f'{filepath}/{track_name}.mp3')
 
                 # Tag
                 file = EasyID3(f'{filepath}/{track_name}.mp3')
