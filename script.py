@@ -28,7 +28,12 @@ if __name__ == '__main__':
     album = input('Album: ')
     do_increment = input('Increment filenames (y/n): ') == 'y'
     target_directory = input('Output directory (MUST BE ABSOLUTE, leave blank for current): ')
-    directory = os.path.abspath(f'{target_directory}/{artist}/{album}')
+
+    if target_directory == '':
+        directory = f'./{artist}/{album}'
+    else:     
+        directory = os.path.abspath(f'{target_directory}/{artist}/{album}')
+    
     temp_file_path = f'{directory}/temp_name_before_sanitization.mp3'
     
     yt_dlp_options = {
